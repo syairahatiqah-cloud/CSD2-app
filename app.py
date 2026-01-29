@@ -567,11 +567,11 @@ with tab1:
     st.plotly_chart(fig1, use_container_width=True)
 
     c1a, c1b, c1c = st.columns(3)
-    c1a.download_button("Download HTML (Step 1)", fig_to_html_bytes(fig1), f"Step1_Trend_{safe_name(val_col)}.html", "text/html")
+    c1a.download_button("Download HTML (Step 1)", fig_to_html_bytes(fig1), f"Trend_Extraction{safe_name(val_col)}.html", "text/html")
     png1 = fig_to_png_bytes(mpl_timeseries(df_main[dt_col], [df_main["WL"], df_main["Trend"]], ["Raw", "Trend"],
                                            f"Step 1 Trend (Sigma={sigma_hours}h)", str(val_col)))
-    c1b.download_button("Download PNG (Step 1)", png1, f"Step1_Trend_{safe_name(val_col)}.png", "image/png")
-    download_csv_button("Download CSV (Step 1)", step1_df, f"Step1_Trend_{safe_name(val_col)}.csv")
+    c1b.download_button("Download PNG (Step 1)", png1, f"Trend_Extraction_{safe_name(val_col)}.png", "image/png")
+    download_csv_button("Download CSV (Step 1)", step1_df, f"Trend_Extraction_{safe_name(val_col)}.csv")
 
     # STEP 2
     step2_df = df_main[[dt_col, "Residual"]].copy()
@@ -585,16 +585,16 @@ with tab1:
     st.plotly_chart(fig2, use_container_width=True)
 
     c2a, c2b, c2c = st.columns(3)
-    c2a.download_button("Download HTML (Step 2)", fig_to_html_bytes(fig2), f"Step2_Residual_{safe_name(val_col)}.html", "text/html")
+    c2a.download_button("Download HTML (Step 2)", fig_to_html_bytes(fig2), f"Residual(WL − Trend)_{safe_name(val_col)}.html", "text/html")
     png2 = fig_to_png_bytes(mpl_timeseries(df_main[dt_col], [df_main["Residual"]], ["Residual"], "Step 2 Residual", "Residual"))
-    c2b.download_button("Download PNG (Step 2)", png2, f"Step2_Residual_{safe_name(val_col)}.png", "image/png")
-    download_csv_button("Download CSV (Step 2)", step2_df, f"Step2_Residual_{safe_name(val_col)}.csv")
+    c2b.download_button("Download PNG (Step 2)", png2, f"Residual(WL − Trend)_{safe_name(val_col)}.png", "image/png")
+    download_csv_button("Download CSV (Step 2)", step2_df, f"Residual(WL − Trend)_{safe_name(val_col)}.csv")
 
-    # STEP 3A Variance
+    # STEP 3 Variance
     step3a_df = dfw[["datetime_start", "Variance"]].copy()
     step3a_df.columns = ["datetime", "variance"]
 
-    st.markdown(f"### Step 3A: Rolling Variance (window = {plot_w}h)")
+    st.markdown(f"### Step 3A: Variance (Rolling window = {plot_w}h)")
     fig3 = go.Figure()
     fig3.add_trace(plotly_line(dfw["datetime_start"], dfw["Variance"], "Variance", hover_label="Variance"))
     add_threshold_line(fig3, thr["var"], "Variance threshold")
@@ -603,16 +603,34 @@ with tab1:
     st.plotly_chart(fig3, use_container_width=True)
 
     c3a, c3b, c3c = st.columns(3)
-    c3a.download_button("Download HTML (Variance)", fig_to_html_bytes(fig3), f"Step3A_Variance_{plot_w}h.html", "text/html")
-    png3 = fig_to_png_bytes(mpl_timeseries(dfw["datetime_start"], [dfw["Variance"]], ["Variance"], f"Rolling Variance ({plot_w}h)", "Variance"))
-    c3b.download_button("Download PNG (Variance)", png3, f"Step3A_Variance_{plot_w}h.png", "image/png")
-    download_csv_button("Download CSV (Variance)", step3a_df, f"Step3A_Variance_{plot_w}h.csv")
+    c3a.download_button("Download HTML (Variance)", fig_to_html_bytes(fig3), f"Variance_Rolling window{plot_w}h.html", "text/html")
+    png3 = fig_to_png_bytes(mpl_timeseries(dfw["datetime_start"], [dfw["Variance"]], ["Variance"], f"Variance_Rolling window({plot_w}h)", "Variance"))
+    c3b.download_button("Download PNG (Variance)", png3, f"Variance_Rolling window_{plot_w}h.png", "image/png")
+    download_csv_button("Download CSV (Variance)", step3a_df, f"Variance_Rolling window_{plot_w}h.csv")
 
-    # STEP 3B AR1
+    # STEP 4 PSD
+    step4_df = dfw[["datetime_start", "PSD_LowFreq"]].copy()
+    step4_df.columns = ["datetime", "psd_lowfreq"]
+
+    st.markdown(f"### Step 4: Power Spectrum Density (PSD) Low-Frequency (Rolling window = {plot_w}h)")
+    fig4 = go.Figure()
+    fig4.add_trace(plotly_line(dfw["datetime_start"], dfw["PSD_LowFreq"], "PSD_LowFreq", hover_label="PSD_LowFreq"))
+    add_threshold_line(fig4, thr["psd"], "PSD threshold")
+    fig4.update_layout(height=320, hovermode="x unified", xaxis_title="DateTime", yaxis_title="PSD_LowFreq")
+    fig4.update_xaxes(hoverformat=HOVER_FMT)
+    st.plotly_chart(fig4, use_container_width=True)
+
+    c4a, c4b, c4c = st.columns(3)
+    c4a.download_button("Download HTML (PSD)", fig_to_html_bytes(fig4), f"Power Spectrum Density (PSD) Low-Frequency (Rolling window =_{plot_w}h).html", "text/html")
+    png4 = fig_to_png_bytes(mpl_timeseries(dfw["datetime_start"], [dfw["PSD_LowFreq"]], ["PSD_LowFreq"], f"Power Spectrum Density (PSD) Low-Frequency (Rolling window ={plot_w}h)", "PSD_LowFreq"))
+    c4b.download_button("Download PNG (PSD)", png4, f"Power Spectrum Density (PSD) Low-Frequency (Rolling window ={plot_w}h).png", "image/png")
+    download_csv_button("Download CSV (PSD)", step4_df, f"Power Spectrum Density (PSD) Low-Frequency (Rolling window ={plot_w}h).csv")
+    
+    # STEP 5 AR1
     step3b_df = dfw[["datetime_start", "AR1"]].copy()
     step3b_df.columns = ["datetime", "ar1"]
 
-    st.markdown(f"### Step 3B: Rolling Autocorrelation AR1 (window = {plot_w}h)")
+    st.markdown(f"### Step 3B: Autocorrelation AR1 (Rolling window = {plot_w}h)")
     fig5 = go.Figure()
     fig5.add_trace(plotly_line(dfw["datetime_start"], dfw["AR1"], "AR1", hover_label="AR1"))
     fig5.add_hline(y=0, line_width=1, line_dash="dash")
@@ -622,30 +640,12 @@ with tab1:
     st.plotly_chart(fig5, use_container_width=True)
 
     c5a, c5b, c5c = st.columns(3)
-    c5a.download_button("Download HTML (AR1)", fig_to_html_bytes(fig5), f"Step3B_AR1_{plot_w}h.html", "text/html")
-    png5 = fig_to_png_bytes(mpl_timeseries(dfw["datetime_start"], [dfw["AR1"]], ["AR1"], f"Rolling AR1 ({plot_w}h)", "AR1"))
-    c5b.download_button("Download PNG (AR1)", png5, f"Step3B_AR1_{plot_w}h.png", "image/png")
-    download_csv_button("Download CSV (AR1)", step3b_df, f"Step3B_AR1_{plot_w}h.csv")
+    c5a.download_button("Download HTML (AR1)", fig_to_html_bytes(fig5), f"Autocorrelation AR1 (Rolling window = {plot_w}h).html", "text/html")
+    png5 = fig_to_png_bytes(mpl_timeseries(dfw["datetime_start"], [dfw["AR1"]], ["AR1"], f"Autocorrelation AR1 (Rolling window = {plot_w}h)", "AR1"))
+    c5b.download_button("Download PNG (AR1)", png5, f"Autocorrelation AR1 (Rolling window = {plot_w}h).png", "image/png")
+    download_csv_button("Download CSV (AR1)", step3b_df, f"Autocorrelation AR1 (Rolling window = {plot_w}h).csv")
 
-    # STEP 4 PSD
-    step4_df = dfw[["datetime_start", "PSD_LowFreq"]].copy()
-    step4_df.columns = ["datetime", "psd_lowfreq"]
-
-    st.markdown(f"### Step 4: PSD Low-Frequency (window = {plot_w}h)")
-    fig4 = go.Figure()
-    fig4.add_trace(plotly_line(dfw["datetime_start"], dfw["PSD_LowFreq"], "PSD_LowFreq", hover_label="PSD_LowFreq"))
-    add_threshold_line(fig4, thr["psd"], "PSD threshold")
-    fig4.update_layout(height=320, hovermode="x unified", xaxis_title="DateTime", yaxis_title="PSD_LowFreq")
-    fig4.update_xaxes(hoverformat=HOVER_FMT)
-    st.plotly_chart(fig4, use_container_width=True)
-
-    c4a, c4b, c4c = st.columns(3)
-    c4a.download_button("Download HTML (PSD)", fig_to_html_bytes(fig4), f"Step4_PSD_{plot_w}h.html", "text/html")
-    png4 = fig_to_png_bytes(mpl_timeseries(dfw["datetime_start"], [dfw["PSD_LowFreq"]], ["PSD_LowFreq"], f"PSD Low-Frequency ({plot_w}h)", "PSD_LowFreq"))
-    c4b.download_button("Download PNG (PSD)", png4, f"Step4_PSD_{plot_w}h.png", "image/png")
-    download_csv_button("Download CSV (PSD)", step4_df, f"Step4_PSD_{plot_w}h.csv")
-
-    # STEP 5 Kendall Tau
+    # STEP 6 Kendall Tau
     st.markdown("### Step 5: Kendall’s Tau Score (Trend Strength)")
     tau_row = tau_df[tau_df["window_hours"] == int(plot_w)].copy()
     if tau_row.empty:
